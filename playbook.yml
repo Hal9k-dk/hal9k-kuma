@@ -90,6 +90,37 @@
         dest: /etc/nginx/enabled.d/status-hal9k.conf
         state: link
 
+    - name: Ensure nginx cache directory exists
+      ansible.builtin.file:
+        path: /var/cache/nginx
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Create nginx log directory for meshview.belunktum.dk
+      ansible.builtin.file:
+        path: /var/log/nginx/meshview.belunktum.dk
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Deploy meshview-proxy.conf to nginx sites.d
+      ansible.builtin.copy:
+        src: files/meshview-proxy.conf
+        dest: /etc/nginx/sites.d/meshview-proxy.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload nginx
+
+    - name: Create symlink in nginx enabled.d for meshview-proxy
+      ansible.builtin.file:
+        src: /etc/nginx/sites.d/meshview-proxy.conf
+        dest: /etc/nginx/enabled.d/meshview-proxy.conf
+        state: link
+
     - name: Deploy podman.conf to nftables.d
       ansible.builtin.copy:
         src: files/nft/podman.conf

@@ -96,7 +96,7 @@ MONITORS: list[dict] = [
     {
         "name": "MeshCore hal9k_hq repeater",
         "type": MonitorType.JSON_QUERY,
-        "url": "https://meshview.dk/api/nodes/ced8d22404718cb716fe4356d80e06e0dbd06d9381d30c43578016db3dc37cf9",
+        "url": "https://meshview.belunktum.dk/api/nodes/ced8d22404718cb716fe4356d80e06e0dbd06d9381d30c43578016db3dc37cf9",
         "jsonPath": '($millis() - $toMillis(node.last_heard)) / (1000 * 60 * 60)',
         "expectedValue": "24",
         "jsonPathOperator": "<",
@@ -106,7 +106,7 @@ MONITORS: list[dict] = [
     {
         "name": "MeshCore hal9k_room",
         "type": MonitorType.JSON_QUERY,
-        "url": "https://meshview.dk/api/nodes/9e1ef540b5cfe1897b26220481b5af24027407a6faa7a31fd52d4efda7608242",
+        "url": "https://meshview.belunktum.dk/api/nodes/9e1ef540b5cfe1897b26220481b5af24027407a6faa7a31fd52d4efda7608242",
         "jsonPath": '($millis() - $toMillis(node.last_heard)) / (1000 * 60 * 60)',
         "expectedValue": "30",
         "jsonPathOperator": "<",
