@@ -1,0 +1,8 @@
+[Unit]
+Description=Certbot renewal for status.hal9k.dk
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/certbot certonly --non-interactive --webroot -w /var/www/certbot -d status.hal9k.dk

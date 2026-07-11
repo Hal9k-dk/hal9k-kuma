@@ -1,0 +1,148 @@
+---
+- name: Deploy Uptime Kuma via Podman
+  hosts: uptime_kuma
+  become: false  # already root
+
+  vars:
+    kuma_image: docker.io/louislam/uptime-kuma:2
+    kuma_container_name: uptime-kuma
+    kuma_data_dir: /opt/uptime-kuma/data
+    kuma_port: "3001"
+
+  tasks:
+    - name: Install podman
+      ansible.builtin.package:
+        name: podman
+        state: present
+
+    - name: Ensure data directory exists
+      ansible.builtin.file:
+        path: "{{ kuma_data_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Pull Uptime Kuma image
+      containers.podman.podman_image:
+        name: "{{ kuma_image }}"
+        state: present
+
+    - name: Run Uptime Kuma container
+      containers.podman.podman_container:
+        name: "{{ kuma_container_name }}"
+        image: "{{ kuma_image }}"
+        state: started
+        restart_policy: always
+        ports:
+          - "{{ kuma_port }}:3001"
+        volumes:
+          - "{{ kuma_data_dir }}:/app/data"
+
+    - name: Enable and start podman auto-restart service (lingering for root)
+      ansible.builtin.systemd:
+        name: "podman-restart.service"
+        enabled: true
+        state: started
+        daemon_reload: true
+
+    - name: Create nginx log directory for status.belunktum.dk
+      ansible.builtin.file:
+        path: /var/log/nginx/status.belunktum.dk
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Create nginx log directory for status.hal9k.dk
+      ansible.builtin.file:
+        path: /var/log/nginx/status.hal9k.dk
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Deploy kuma.conf to nginx sites.d
+      ansible.builtin.copy:
+        src: files/kuma.conf
+        dest: /etc/nginx/sites.d/kuma.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload nginx
+
+    - name: Create symlink in nginx enable.d
+      ansible.builtin.file:
+        src: /etc/nginx/sites.d/kuma.conf
+        dest: /etc/nginx/enabled.d/kuma.conf
+        state: link
+
+    - name: Deploy status-hal9k.conf to nginx sites.d
+      ansible.builtin.copy:
+        src: files/status-hal9k.conf
+        dest: /etc/nginx/sites.d/status-hal9k.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload nginx
+
+    - name: Create symlink in nginx enabled.d for status-hal9k.conf
+      ansible.builtin.file:
+        src: /etc/nginx/sites.d/status-hal9k.conf
+        dest: /etc/nginx/enabled.d/status-hal9k.conf
+        state: link
+
+    - name: Deploy podman.conf to nftables.d
+      ansible.builtin.copy:
+        src: files/nft/podman.conf
+        dest: /etc/nftables.d/podman.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart nftables
+
+    - name: Ensure /var/www/certbot webroot exists
+      ansible.builtin.file:
+        path: /var/www/certbot
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Deploy certbot systemd service unit
+      ansible.builtin.copy:
+        src: files/certbot-status-hal9k-dk.service
+        dest: /etc/systemd/system/certbot-status-hal9k-dk.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Deploy certbot systemd timer unit
+      ansible.builtin.copy:
+        src: files/certbot-status-hal9k-dk.timer
+        dest: /etc/systemd/system/certbot-status-hal9k-dk.timer
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd
+
+    - name: Enable and start certbot renewal timer
+      ansible.builtin.systemd:
+        name: certbot-status-hal9k-dk.timer
+        enabled: true
+        state: started
+        daemon_reload: true
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: true
+
+    - name: Reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+
+    - name: Restart nftables
+      ansible.builtin.service:
+        name: nftables.service
+        state: restarted
