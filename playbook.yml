@@ -24,12 +24,14 @@
     - name: Pull Uptime Kuma image
       containers.podman.podman_image:
         name: "{{ kuma_image }}"
+        force: true
         state: present
 
     - name: Run Uptime Kuma container
       containers.podman.podman_container:
         name: "{{ kuma_container_name }}"
         image: "{{ kuma_image }}"
+        recreate: true
         state: started
         restart_policy: always
         ports:

@@ -20,11 +20,13 @@ console = Console()
 # ---------------------------------------------------------------------------
 
 CONDITIONS_STALE_120S: list[dict] = [
-    {"type": "expression", "variable": "json_value", "operator": "lt", "value": "120", "andOr": "and"},
+    {"type": "expression", "variable": "json_value", "operator": "lt", "value": "120000", "andOr": "and"},
+    {"type": "expression", "variable": "json_value", "operator": "gt", "value": "0", "andOr": "and"},
 ]
 
 CONDITIONS_STALE_720S: list[dict] = [
-    {"type": "expression", "variable": "json_value", "operator": "lt", "value": "720", "andOr": "and"},
+    {"type": "expression", "variable": "json_value", "operator": "lt", "value": "720000", "andOr": "and"},
+    {"type": "expression", "variable": "json_value", "operator": "gt", "value": "0", "andOr": "and"},
 ]
 
 MONITORS: list[dict] = [
@@ -101,8 +103,8 @@ MONITORS: list[dict] = [
         "name": "MeshCore hal9k_hq repeater",
         "type": MonitorType.JSON_QUERY,
         "url": "https://meshview.belunktum.dk/api/nodes/ced8d22404718cb716fe4356d80e06e0dbd06d9381d30c43578016db3dc37cf9",
-        "jsonPath": '($millis() - $toMillis(node.last_heard)) / (1000 * 60 * 60)',
-        "expectedValue": "24",
+        "jsonPath": "($millis() - $toMillis(node.last_heard))",
+        "expectedValue": "86400000",
         "jsonPathOperator": "<",
         "maxretries": 0,
         "accepted_statuscodes": ["200-299"],
@@ -111,8 +113,8 @@ MONITORS: list[dict] = [
         "name": "MeshCore hal9k_room",
         "type": MonitorType.JSON_QUERY,
         "url": "https://meshview.belunktum.dk/api/nodes/9e1ef540b5cfe1897b26220481b5af24027407a6faa7a31fd52d4efda7608242",
-        "jsonPath": '($millis() - $toMillis(node.last_heard)) / (1000 * 60 * 60)',
-        "expectedValue": "30",
+        "jsonPath": "($millis() - $toMillis(node.last_heard))",
+        "expectedValue": "108000000",
         "jsonPathOperator": "<",
         "maxretries": 0,
         "accepted_statuscodes": ["200-299"],
@@ -125,7 +127,7 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/bridge/heartbeat",
         "mqttCheckType": "json-query",
-        "jsonPath": "($millis() - $toMillis(timestamp)) / 1000",
+        "jsonPath": "($millis() - $toMillis(timestamp))",
         "jsonPathOperator": "==",
         "conditions": CONDITIONS_STALE_120S,
         "maxretries": 0,
@@ -144,7 +146,7 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/acs/status/main",
         "mqttCheckType": "json-query",
-        "jsonPath": '($millis() - $toMillis(data.card_reader_heartbeat + "Z")) / 1000',
+        "jsonPath": "($millis() - $toMillis(data.card_reader_heartbeat))",
         "jsonPathOperator": "==",
         "expectedValue": "true",
         "conditions": CONDITIONS_STALE_120S,
@@ -157,7 +159,7 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/acs/status/barndoor",
         "mqttCheckType": "json-query",
-        "jsonPath": '($millis() - $toMillis(data.card_reader_heartbeat + "Z")) / 1000',
+        "jsonPath": "($millis() - $toMillis(data.card_reader_heartbeat))",
         "jsonPathOperator": "==",
         "expectedValue": "true",
         "conditions": CONDITIONS_STALE_120S,
@@ -170,7 +172,7 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/acs/status/woodshop",
         "mqttCheckType": "json-query",
-        "jsonPath": '($millis() - $toMillis(data.card_reader_heartbeat + "Z")) / 1000',
+        "jsonPath": "($millis() - $toMillis(data.card_reader_heartbeat))",
         "jsonPathOperator": "==",
         "expectedValue": "true",
         "conditions": CONDITIONS_STALE_120S,
@@ -183,7 +185,7 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/acs/status/sync",
         "mqttCheckType": "json-query",
-        "jsonPath": "($millis() - $toMillis(last_sync)) / 1000",
+        "jsonPath": "($millis() - $toMillis(last_sync))",
         "jsonPathOperator": "==",
         "expectedValue": "true",
         "conditions": CONDITIONS_STALE_720S,
