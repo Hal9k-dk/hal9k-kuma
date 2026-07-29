@@ -314,7 +314,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "python-dotenv" },
     { name = "rich" },
-    { name = "uptime-kuma-api" },
+    { name = "uptime-kuma-api2" },
 ]
 
 [package.dev-dependencies]
@@ -329,7 +329,7 @@ dev = [
 requires-dist = [
     { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "rich", specifier = ">=15.0.0" },
-    { name = "uptime-kuma-api", git = "https://github.com/larsch/uptime-kuma-api.git" },
+    { name = "uptime-kuma-api2", specifier = ">=2.2.1" },
 ]
 
 [package.metadata.requires-dev]
@@ -353,12 +353,16 @@ wheels = [
 ]
 
 [[package]]
-name = "uptime-kuma-api"
-version = "2.0.0"
-source = { git = "https://github.com/larsch/uptime-kuma-api.git#3829af022c8eab1f3b11228fc7e0b3458ff4b8a9" }
+name = "uptime-kuma-api2"
+version = "2.2.1"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
     { name = "python-socketio", extra = ["client"] },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d6/a1/944d2f8a2959249c9841cb9bd5176ec9e8a8bb3220d3870405e12208cbd1/uptime_kuma_api2-2.2.1.tar.gz", hash = "sha256:c792ffb635f6682a189cff28de940e1690b40989d5a4fbcd362f7ddf70f8bc42", size = 70213, upload-time = "2026-07-28T11:23:26.838Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/81/29/6851fb111d5dba160dcb78f33c3284609d2774cfe39d962fe1b5ac5e0ca3/uptime_kuma_api2-2.2.1-py3-none-any.whl", hash = "sha256:7dcf0766862cc106c8281c7b2490a74a93ec7f482e778b1e6fe2be18ab2cb52a", size = 54877, upload-time = "2026-07-28T11:23:25.809Z" },
 ]
 
 [[package]]

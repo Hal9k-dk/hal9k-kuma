@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "uptime-kuma-api @ git+https://github.com/larsch/uptime-kuma-api.git",
+    "uptime-kuma-api2>=2.2.1",
     "rich>=15.0.0",
     "python-dotenv>=1.2.2",
 ]
