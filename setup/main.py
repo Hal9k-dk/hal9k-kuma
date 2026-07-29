@@ -183,7 +183,7 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/acs/status/sync",
         "mqttCheckType": "json-query",
-        "jsonPath": "($millis() - $toMillis(last_sync + \"Z\")) / 1000",
+        "jsonPath": "($millis() - $toMillis(last_sync)) / 1000",
         "jsonPathOperator": "==",
         "expectedValue": "true",
         "conditions": CONDITIONS_STALE_720S,
