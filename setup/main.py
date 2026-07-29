@@ -23,6 +23,10 @@ CONDITIONS_STALE_120S: list[dict] = [
     {"type": "expression", "variable": "json_value", "operator": "lt", "value": "120", "andOr": "and"},
 ]
 
+CONDITIONS_STALE_720S: list[dict] = [
+    {"type": "expression", "variable": "json_value", "operator": "lt", "value": "720", "andOr": "and"},
+]
+
 MONITORS: list[dict] = [
     # Public web services (HTTPS)
     {
@@ -127,18 +131,6 @@ MONITORS: list[dict] = [
         "maxretries": 0,
     },
     {
-        "name": "ACS Tester",
-        "type": MonitorType.MQTT,
-        "hostname": "mqtt://mqtt.hal9k.dk",
-        "port": 1883,
-        "mqttTopic": "hal9k/bridge/heartbeat",
-        "mqttCheckType": "json-query",
-        "jsonPath": "($millis() - $toMillis(timestamp)) / 1000",
-        "jsonPathOperator": "==",
-        "conditions": CONDITIONS_STALE_120S,
-        "maxretries": 0,
-    },
-    {
         "name": "ACS Main",
         "type": MonitorType.PORT,
         "hostname": "mqtt.hal9k.dk",
@@ -152,8 +144,9 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/acs/status/main",
         "mqttCheckType": "json-query",
-        "jsonPath": "($millis() - $toMillis(data.card_reader_heartbeat) / 1000",
+        "jsonPath": '($millis() - $toMillis(data.card_reader_heartbeat + "Z")) / 1000',
         "jsonPathOperator": "==",
+        "expectedValue": "true",
         "conditions": CONDITIONS_STALE_120S,
         "maxretries": 0,
     },
@@ -164,8 +157,9 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/acs/status/barndoor",
         "mqttCheckType": "json-query",
-        "jsonPath": "($millis() - $toMillis(data.card_reader_heartbeat) / 1000",
+        "jsonPath": '($millis() - $toMillis(data.card_reader_heartbeat + "Z")) / 1000',
         "jsonPathOperator": "==",
+        "expectedValue": "true",
         "conditions": CONDITIONS_STALE_120S,
         "maxretries": 0,
     },
@@ -176,9 +170,23 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/acs/status/woodshop",
         "mqttCheckType": "json-query",
-        "jsonPath": "($millis() - $toMillis(data.card_reader_heartbeat) / 1000",
+        "jsonPath": '($millis() - $toMillis(data.card_reader_heartbeat + "Z")) / 1000',
         "jsonPathOperator": "==",
+        "expectedValue": "true",
         "conditions": CONDITIONS_STALE_120S,
+        "maxretries": 0,
+    },
+    {
+        "name": "ACS Sync ForeningLet",
+        "type": MonitorType.MQTT,
+        "hostname": "mqtt://mqtt.hal9k.dk",
+        "port": 1883,
+        "mqttTopic": "hal9k/acs/status/sync",
+        "mqttCheckType": "json-query",
+        "jsonPath": "($millis() - $toMillis(last_check + \"Z\")) / 1000",
+        "jsonPathOperator": "==",
+        "expectedValue": "true",
+        "conditions": CONDITIONS_STALE_720S,
         "maxretries": 0,
     },
 ]
@@ -193,6 +201,15 @@ def get_existing_monitors(api: UptimeKumaApi) -> dict[str, int]:
 def apply_monitors(api: UptimeKumaApi, dry_run: bool = False) -> None:
     existing = get_existing_monitors(api)
     console.print(f"[bold]Found {len(existing)} existing monitor(s)[/bold]")
+
+    # ACS Tester was an obsolete duplicate of the MQTT Bridge monitor.
+    if "ACS Tester" in existing:
+        log.info("Deleting obsolete monitor: ACS Tester")
+        if not dry_run:
+            api.delete_monitor(existing["ACS Tester"])
+            log.info("  Deleted: ACS Tester")
+        else:
+            console.print("  [yellow][dry-run][/yellow] Would delete: ACS Tester")
 
     for mon in MONITORS:
         name = mon["name"]
