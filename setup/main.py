@@ -90,6 +90,15 @@ MONITORS: list[dict] = [
         "maxretries": 3,
         "accepted_statuscodes": ["200-299"],
     },
+    {
+        "name": "Danske Domæneregistranter",
+        "type": MonitorType.HTTP,
+        "url": "https://registrant.dk/",
+        "maxretries": 3,
+        "accepted_statuscodes": ["200-299"],
+        # registrant.dk is IPv6-only; needs IPv6 reachability inside the Kuma container.
+        "notificationIDList": [1],
+    },
     # MQTT broker (TCP port check)
     {
         "name": "MQTT Broker",
