@@ -60,6 +60,11 @@ def main() -> None:
                 fields["hostname"] = m.get("hostname", "")
                 fields["port"] = m.get("port", 0)
                 fields["maxretries"] = m.get("maxretries", 0)
+            case MonitorType.PUSH:
+                # pushToken is deliberately omitted: Kuma generates it and the
+                # client uses it as a credential.
+                fields["interval"] = m.get("interval", 60)
+                fields["maxretries"] = m.get("maxretries", 0)
             case MonitorType.PING:
                 fields["hostname"] = m.get("hostname", "")
                 fields["maxretries"] = m.get("maxretries", 0)
