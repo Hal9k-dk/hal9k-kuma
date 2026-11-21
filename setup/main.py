@@ -35,13 +35,6 @@ MONITORS: list[dict] = [
         "name": "www.hal9k.dk",
         "type": MonitorType.HTTP,
         "url": "https://www.hal9k.dk",
-        "maxretries": 0,
-        "accepted_statuscodes": ["200-299"],
-    },
-    {
-        "name": "HAL9K WordPress",
-        "type": MonitorType.HTTP,
-        "url": "https://www.hal9k.dk",
         "maxretries": 3,
         "accepted_statuscodes": ["200-299"],
     },
@@ -217,6 +210,14 @@ MONITORS: list[dict] = [
     },
 ]
 
+# Monitors that were retitled: the existing monitor is renamed rather than
+# recreated, so its history (and, for push monitors, its token) survives.
+# A monitor already holding the new name is dropped first, which makes this a
+# one-off migration that becomes a no-op once the old name is gone.
+RENAMES: dict[str, str] = {
+    "HAL9K WordPress": "www.hal9k.dk",
+}
+
 
 def get_existing_monitors(api: UptimeKumaApi) -> dict[str, int]:
     """Return mapping of monitor name -> id for all existing monitors."""
@@ -260,6 +261,24 @@ def apply_monitors(api: UptimeKumaApi, base_url: str, dry_run: bool = False) -> 
             log.info("  Deleted: ACS Tester")
         else:
             console.print("  [yellow][dry-run][/yellow] Would delete: ACS Tester")
+
+    for old, new in RENAMES.items():
+        if old not in existing:
+            continue
+        if new in existing:
+            log.info("Deleting superseded monitor: %s", new)
+            if not dry_run:
+                api.delete_monitor(existing[new])
+            else:
+                console.print(f"  [yellow][dry-run][/yellow] Would delete: {new}")
+            ids.pop(new, None)
+        log.info("Renaming monitor: %s -> %s", old, new)
+        if not dry_run:
+            api.edit_monitor(existing[old], name=new)
+        else:
+            console.print(f"  [yellow][dry-run][/yellow] Would rename: {old} -> {new}")
+        ids[new] = existing.pop(old)
+        existing[new] = ids[new]
 
     for mon in MONITORS:
         name = mon["name"]

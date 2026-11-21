@@ -2,7 +2,7 @@
 
 from uptime_kuma_api import MonitorType
 
-from main import MONITORS, push_url
+from main import MONITORS, RENAMES, push_url
 
 PUSH_MONITORS = {m["name"]: m for m in MONITORS if m["type"] == MonitorType.PUSH}
 
@@ -10,6 +10,13 @@ PUSH_MONITORS = {m["name"]: m for m in MONITORS if m["type"] == MonitorType.PUSH
 def test_monitor_names_are_unique():
     names = [m["name"] for m in MONITORS]
     assert len(names) == len(set(names))
+
+
+def test_renames_target_declared_monitors():
+    names = {m["name"] for m in MONITORS}
+    for old, new in RENAMES.items():
+        assert new in names, f"rename target {new!r} is not a declared monitor"
+        assert old not in names, f"rename source {old!r} is still declared"
 
 
 def test_sofiendalsvej_push_monitors_exist():
