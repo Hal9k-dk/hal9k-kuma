@@ -29,6 +29,11 @@ CONDITIONS_STALE_720S: list[dict] = [
     {"type": "expression", "variable": "json_value", "operator": "gt", "value": "0", "andOr": "and"},
 ]
 
+# Card readers report the epoch as their heartbeat until they have reported once
+# since boot, which is the case for exactly one beat after an ACS unit reboots.
+# Treat that as just-seen, otherwise the reboot reads as a stale heartbeat.
+HEARTBEAT_AGE_JSONPATH = '($hb := $toMillis(data.card_reader_heartbeat); $hb = 0 ? 1 : $millis() - $hb)'
+
 MONITORS: list[dict] = [
     # Public web services (HTTPS)
     {
@@ -148,11 +153,11 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/acs/status/main",
         "mqttCheckType": "json-query",
-        "jsonPath": "($millis() - $toMillis(data.card_reader_heartbeat))",
+        "jsonPath": HEARTBEAT_AGE_JSONPATH,
         "jsonPathOperator": "==",
         "expectedValue": "true",
         "conditions": CONDITIONS_STALE_120S,
-        "maxretries": 0,
+        "maxretries": 1,
     },
     {
         "name": "ACS Barn Door Card Reader",
@@ -161,11 +166,11 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/acs/status/barndoor",
         "mqttCheckType": "json-query",
-        "jsonPath": "($millis() - $toMillis(data.card_reader_heartbeat))",
+        "jsonPath": HEARTBEAT_AGE_JSONPATH,
         "jsonPathOperator": "==",
         "expectedValue": "true",
         "conditions": CONDITIONS_STALE_120S,
-        "maxretries": 0,
+        "maxretries": 1,
     },
     {
         "name": "ACS Wood Shop Door Card Reader",
@@ -174,11 +179,11 @@ MONITORS: list[dict] = [
         "port": 1883,
         "mqttTopic": "hal9k/acs/status/woodshop",
         "mqttCheckType": "json-query",
-        "jsonPath": "($millis() - $toMillis(data.card_reader_heartbeat))",
+        "jsonPath": HEARTBEAT_AGE_JSONPATH,
         "jsonPathOperator": "==",
         "expectedValue": "true",
         "conditions": CONDITIONS_STALE_120S,
-        "maxretries": 0,
+        "maxretries": 1,
     },
     {
         "name": "ACS Sync ForeningLet",
